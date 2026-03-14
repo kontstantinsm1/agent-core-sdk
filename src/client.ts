@@ -1,6 +1,7 @@
 import type {
   AgentCoreConfig,
   CreateCallParams,
+  QuickCallParams,
   Call,
   Transcript,
   CreateAgentParams,
@@ -18,6 +19,8 @@ export class AgentCore {
   private apiKey: string;
   private baseUrl: string;
   private webhookSecret?: string;
+  readonly defaultAgentId?: string;
+  readonly defaultWebhookUrl?: string;
 
   public calls: CallsAPI;
   public agents: AgentsAPI;
@@ -28,6 +31,8 @@ export class AgentCore {
     this.apiKey = config.apiKey;
     this.baseUrl = config.baseUrl.replace(/\/$/, "");
     this.webhookSecret = config.webhookSecret;
+    this.defaultAgentId = config.defaultAgentId;
+    this.defaultWebhookUrl = config.defaultWebhookUrl;
 
     this.calls = new CallsAPI(this);
     this.agents = new AgentsAPI(this);
@@ -136,12 +141,25 @@ export class AgentCore {
 class CallsAPI {
   constructor(private client: AgentCore) {}
 
-  async create(params: CreateCallParams): Promise<Call> {
+  /**
+   * Create a call. Pass a phone string or full params object.
+   *
+   * @example
+   * // Quick — uses defaultAgentId & defaultWebhookUrl from config
+   * await agent.calls.create("+380501234567")
+   *
+   * // Full
+   * await agent.calls.create({ phone: "+380501234567", agentId: "..." })
+   */
+  async create(params: QuickCallParams): Promise<Call> {
+    const p: CreateCallParams =
+      typeof params === "string" ? { phone: params } : params;
+
     return this.client.request<Call>("POST", "/calls", {
-      phone: params.phone,
-      agent_id: params.agentId,
-      webhook_url: params.webhookUrl,
-      metadata: params.metadata,
+      phone: p.phone,
+      agent_id: p.agentId || this.client.defaultAgentId,
+      webhook_url: p.webhookUrl || this.client.defaultWebhookUrl,
+      metadata: p.metadata,
     });
   }
 
