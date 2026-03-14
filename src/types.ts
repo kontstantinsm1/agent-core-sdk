@@ -7,6 +7,7 @@ export interface AgentCoreConfig {
   defaultAgentId?: string;
   defaultWebhookUrl?: string;
   defaultCallerId?: string;
+  defaultStepSave?: boolean;
 }
 
 // ── Calls ──
@@ -16,6 +17,7 @@ export interface CreateCallParams {
   agentId?: string;
   webhookUrl?: string;
   callerId?: string;
+  stepSave?: boolean;
   metadata?: Record<string, string>;
 }
 
