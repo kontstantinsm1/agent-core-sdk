@@ -53,6 +53,7 @@ var AgentCore = class {
     this.webhookSecret = config.webhookSecret;
     this.defaultAgentId = config.defaultAgentId;
     this.defaultWebhookUrl = config.defaultWebhookUrl;
+    this.defaultCallerId = config.defaultCallerId;
     this.calls = new CallsAPI(this);
     this.agents = new AgentsAPI(this);
     this.numbers = new NumbersAPI(this);
@@ -144,6 +145,7 @@ var CallsAPI = class {
       phone: p.phone,
       agent_id: p.agentId || this.client.defaultAgentId,
       webhook_url: p.webhookUrl || this.client.defaultWebhookUrl,
+      caller_id: p.callerId || this.client.defaultCallerId,
       metadata: p.metadata
     });
   }

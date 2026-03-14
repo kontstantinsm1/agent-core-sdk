@@ -21,6 +21,7 @@ export class AgentCore {
   private webhookSecret?: string;
   readonly defaultAgentId?: string;
   readonly defaultWebhookUrl?: string;
+  readonly defaultCallerId?: string;
 
   public calls: CallsAPI;
   public agents: AgentsAPI;
@@ -33,6 +34,7 @@ export class AgentCore {
     this.webhookSecret = config.webhookSecret;
     this.defaultAgentId = config.defaultAgentId;
     this.defaultWebhookUrl = config.defaultWebhookUrl;
+    this.defaultCallerId = config.defaultCallerId;
 
     this.calls = new CallsAPI(this);
     this.agents = new AgentsAPI(this);
@@ -159,6 +161,7 @@ class CallsAPI {
       phone: p.phone,
       agent_id: p.agentId || this.client.defaultAgentId,
       webhook_url: p.webhookUrl || this.client.defaultWebhookUrl,
+      caller_id: p.callerId || this.client.defaultCallerId,
       metadata: p.metadata,
     });
   }

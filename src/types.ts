@@ -6,6 +6,7 @@ export interface AgentCoreConfig {
   webhookSecret?: string;
   defaultAgentId?: string;
   defaultWebhookUrl?: string;
+  defaultCallerId?: string;
 }
 
 // ── Calls ──
@@ -14,6 +15,7 @@ export interface CreateCallParams {
   phone: string;
   agentId?: string;
   webhookUrl?: string;
+  callerId?: string;
   metadata?: Record<string, string>;
 }
 

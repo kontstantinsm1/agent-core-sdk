@@ -4,11 +4,13 @@ interface AgentCoreConfig {
     webhookSecret?: string;
     defaultAgentId?: string;
     defaultWebhookUrl?: string;
+    defaultCallerId?: string;
 }
 interface CreateCallParams {
     phone: string;
     agentId?: string;
     webhookUrl?: string;
+    callerId?: string;
     metadata?: Record<string, string>;
 }
 /**
@@ -127,6 +129,7 @@ declare class AgentCore {
     private webhookSecret?;
     readonly defaultAgentId?: string;
     readonly defaultWebhookUrl?: string;
+    readonly defaultCallerId?: string;
     calls: CallsAPI;
     agents: AgentsAPI;
     numbers: NumbersAPI;
