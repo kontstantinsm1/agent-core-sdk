@@ -3,6 +3,7 @@ export type {
   AgentCoreConfig,
   CreateCallParams,
   Call,
+  TestCallResponse,
   Transcript,
   TranscriptEntry,
   CreateAgentParams,

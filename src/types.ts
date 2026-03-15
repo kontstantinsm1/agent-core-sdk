@@ -8,6 +8,8 @@ export interface AgentCoreConfig {
   defaultWebhookUrl?: string;
   defaultCallerId?: string;
   defaultStepSave?: boolean;
+  livekitPublicUrl?: string;
+  testPhone?: string;
 }
 
 // ── Calls ──
@@ -25,6 +27,13 @@ export interface CreateCallParams {
  * Minimal call params — phone only, rest from defaults.
  */
 export type QuickCallParams = string | CreateCallParams;
+
+export interface TestCallResponse {
+  roomName: string;
+  livekitUrl: string;
+  token: string;
+  sessionId: string;
+}
 
 export interface Call {
   callId: string;

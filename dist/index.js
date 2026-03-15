@@ -55,6 +55,8 @@ var AgentCore = class {
     this.defaultWebhookUrl = config.defaultWebhookUrl;
     this.defaultCallerId = config.defaultCallerId;
     this.defaultStepSave = config.defaultStepSave ?? true;
+    this.livekitPublicUrl = config.livekitPublicUrl;
+    this.testPhone = config.testPhone || "+380000000000";
     this.calls = new CallsAPI(this);
     this.agents = new AgentsAPI(this);
     this.numbers = new NumbersAPI(this);
@@ -168,6 +170,41 @@ var CallsAPI = class {
   }
   async hangup(callId) {
     return this.client.request("POST", `/calls/${callId}/hangup`);
+  }
+  /**
+   * Check if a phone number is the test/debug number.
+   */
+  isTestPhone(phone) {
+    return phone.replace(/\s/g, "") === this.client.testPhone;
+  }
+  /**
+   * Start a WebRTC test call (no SIP, browser audio).
+   * Returns LiveKit connection details.
+   */
+  async testCall(agentId) {
+    const url = `${this.client.baseUrl}/test-call`;
+    const headers = {
+      "Content-Type": "application/json"
+    };
+    const body = {};
+    const aid = agentId || this.client.defaultAgentId;
+    if (aid) body.agent_id = aid;
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Test call failed");
+    }
+    const data = await res.json();
+    return {
+      roomName: data.room_name,
+      livekitUrl: this.client.livekitPublicUrl || data.livekit_url,
+      token: data.token,
+      sessionId: data.session_id
+    };
   }
 };
 var AgentsAPI = class {

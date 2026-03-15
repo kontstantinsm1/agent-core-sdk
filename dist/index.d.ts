@@ -6,6 +6,8 @@ interface AgentCoreConfig {
     defaultWebhookUrl?: string;
     defaultCallerId?: string;
     defaultStepSave?: boolean;
+    livekitPublicUrl?: string;
+    testPhone?: string;
 }
 interface CreateCallParams {
     phone: string;
@@ -19,6 +21,12 @@ interface CreateCallParams {
  * Minimal call params — phone only, rest from defaults.
  */
 type QuickCallParams = string | CreateCallParams;
+interface TestCallResponse {
+    roomName: string;
+    livekitUrl: string;
+    token: string;
+    sessionId: string;
+}
 interface Call {
     callId: string;
     status: "queued" | "in_progress" | "completed" | "failed" | "cancelled";
@@ -133,6 +141,8 @@ declare class AgentCore {
     readonly defaultWebhookUrl?: string;
     readonly defaultCallerId?: string;
     readonly defaultStepSave?: boolean;
+    readonly livekitPublicUrl?: string;
+    readonly testPhone: string;
     calls: CallsAPI;
     agents: AgentsAPI;
     numbers: NumbersAPI;
@@ -163,6 +173,15 @@ declare class CallsAPI {
         call_id: string;
         status: string;
     }>;
+    /**
+     * Check if a phone number is the test/debug number.
+     */
+    isTestPhone(phone: string): boolean;
+    /**
+     * Start a WebRTC test call (no SIP, browser audio).
+     * Returns LiveKit connection details.
+     */
+    testCall(agentId?: string): Promise<TestCallResponse>;
 }
 declare class AgentsAPI {
     private client;
@@ -200,4 +219,4 @@ declare class WebhooksAPI {
     }>;
 }
 
-export { type Agent, type AgentConfig, AgentCore, type AgentCoreConfig, AgentCoreError, type Call, type CreateAgentParams, type CreateCallParams, type CreateWebhookParams, type PhoneNumber, type Provider, type Transcript, type TranscriptEntry, type UpdateAgentParams, type Webhook, type WebhookEvent, type WebhookPayload };
+export { type Agent, type AgentConfig, AgentCore, type AgentCoreConfig, AgentCoreError, type Call, type CreateAgentParams, type CreateCallParams, type CreateWebhookParams, type PhoneNumber, type Provider, type TestCallResponse, type Transcript, type TranscriptEntry, type UpdateAgentParams, type Webhook, type WebhookEvent, type WebhookPayload };

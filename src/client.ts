@@ -3,6 +3,7 @@ import type {
   CreateCallParams,
   QuickCallParams,
   Call,
+  TestCallResponse,
   Transcript,
   CreateAgentParams,
   UpdateAgentParams,
@@ -23,6 +24,8 @@ export class AgentCore {
   readonly defaultWebhookUrl?: string;
   readonly defaultCallerId?: string;
   readonly defaultStepSave?: boolean;
+  readonly livekitPublicUrl?: string;
+  readonly testPhone: string;
 
   public calls: CallsAPI;
   public agents: AgentsAPI;
@@ -37,6 +40,8 @@ export class AgentCore {
     this.defaultWebhookUrl = config.defaultWebhookUrl;
     this.defaultCallerId = config.defaultCallerId;
     this.defaultStepSave = config.defaultStepSave ?? true;
+    this.livekitPublicUrl = config.livekitPublicUrl;
+    this.testPhone = config.testPhone || "+380000000000";
 
     this.calls = new CallsAPI(this);
     this.agents = new AgentsAPI(this);
@@ -189,6 +194,48 @@ class CallsAPI {
 
   async hangup(callId: string): Promise<{ call_id: string; status: string }> {
     return this.client.request("POST", `/calls/${callId}/hangup`);
+  }
+
+  /**
+   * Check if a phone number is the test/debug number.
+   */
+  isTestPhone(phone: string): boolean {
+    return phone.replace(/\s/g, "") === this.client.testPhone;
+  }
+
+  /**
+   * Start a WebRTC test call (no SIP, browser audio).
+   * Returns LiveKit connection details.
+   */
+  async testCall(agentId?: string): Promise<TestCallResponse> {
+    const url = `${(this.client as any).baseUrl}/test-call`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    const body: Record<string, string> = {};
+    const aid = agentId || this.client.defaultAgentId;
+    if (aid) body.agent_id = aid;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Test call failed");
+    }
+
+    const data = await res.json();
+
+    return {
+      roomName: data.room_name,
+      livekitUrl: this.client.livekitPublicUrl || data.livekit_url,
+      token: data.token,
+      sessionId: data.session_id,
+    };
   }
 }
 
