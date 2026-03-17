@@ -16,5 +16,7 @@ export type {
   Webhook,
   WebhookEvent,
   WebhookPayload,
+  TransferRequest,
+  OperatorJoinResponse,
 } from "./types";
 export { AgentCoreError } from "./types";

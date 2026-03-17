@@ -144,7 +144,9 @@ export type WebhookEvent =
   | "call.queued"
   | "call.started"
   | "call.completed"
-  | "call.failed";
+  | "call.failed"
+  | "operator.transfer_requested"
+  | "operator.transfer_accepted";
 
 export interface WebhookPayload {
   event: WebhookEvent;
@@ -156,6 +158,30 @@ export interface WebhookPayload {
   transcript?: TranscriptEntry[];
   fields?: Record<string, string>;
   [key: string]: unknown;
+}
+
+// ── Operator / Transfer ──
+
+export interface TransferRequest {
+  transferId: string;
+  roomName: string;
+  callerPhone: string;
+  agentName: string;
+  transferTo: string;
+  transcriptSummary: string;
+  livekitUrl: string;
+  joinUrl: string;
+  createdAt: number;
+  status: "pending" | "accepted";
+}
+
+export interface OperatorJoinResponse {
+  livekitUrl: string;
+  token: string;
+  roomName: string;
+  operatorIdentity: string;
+  callerPhone: string;
+  transcriptSummary: string;
 }
 
 // ── Errors ──

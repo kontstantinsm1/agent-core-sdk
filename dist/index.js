@@ -61,6 +61,7 @@ var AgentCore = class {
     this.agents = new AgentsAPI(this);
     this.numbers = new NumbersAPI(this);
     this.webhooks = new WebhooksAPI(this);
+    this.operator = new OperatorAPI(this);
   }
   async request(method, path, body) {
     const url = `${this.baseUrl}/api/v1${path}`;
@@ -253,6 +254,41 @@ var WebhooksAPI = class {
   }
   async delete(webhookId) {
     return this.client.request("DELETE", `/webhooks/${webhookId}`);
+  }
+};
+var OperatorAPI = class {
+  constructor(client) {
+    this.client = client;
+  }
+  /**
+   * List pending transfers waiting for an operator.
+   *
+   * @example
+   * const { transfers } = await agent.operator.listPending()
+   * for (const t of transfers) {
+   *   console.log(t.transferId, t.callerPhone, t.transcriptSummary)
+   * }
+   */
+  async listPending() {
+    return this.client.request("GET", "/operator/pending");
+  }
+  /**
+   * Accept a transfer — get LiveKit credentials to join the room as operator.
+   *
+   * After calling this, connect to the LiveKit room using the returned token.
+   * The bot will detect the operator and disconnect automatically.
+   *
+   * @example
+   * const result = await agent.operator.join("abc12345")
+   * // Connect to LiveKit with result.livekitUrl + result.token
+   * // result.operatorIdentity is your participant identity
+   * // result.callerPhone, result.transcriptSummary for context
+   */
+  async join(transferId) {
+    return this.client.request(
+      "POST",
+      `/operator/join/${transferId}`
+    );
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

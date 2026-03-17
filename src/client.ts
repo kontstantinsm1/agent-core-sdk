@@ -13,6 +13,8 @@ import type {
   CreateWebhookParams,
   Webhook,
   WebhookPayload,
+  TransferRequest,
+  OperatorJoinResponse,
 } from "./types";
 import { AgentCoreError } from "./types";
 
@@ -31,6 +33,7 @@ export class AgentCore {
   public agents: AgentsAPI;
   public numbers: NumbersAPI;
   public webhooks: WebhooksAPI;
+  public operator: OperatorAPI;
 
   constructor(config: AgentCoreConfig) {
     this.apiKey = config.apiKey;
@@ -47,6 +50,7 @@ export class AgentCore {
     this.agents = new AgentsAPI(this);
     this.numbers = new NumbersAPI(this);
     this.webhooks = new WebhooksAPI(this);
+    this.operator = new OperatorAPI(this);
   }
 
   async request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -298,5 +302,43 @@ class WebhooksAPI {
 
   async delete(webhookId: string): Promise<{ status: string }> {
     return this.client.request("DELETE", `/webhooks/${webhookId}`);
+  }
+}
+
+// ── Operator ──
+
+class OperatorAPI {
+  constructor(private client: AgentCore) {}
+
+  /**
+   * List pending transfers waiting for an operator.
+   *
+   * @example
+   * const { transfers } = await agent.operator.listPending()
+   * for (const t of transfers) {
+   *   console.log(t.transferId, t.callerPhone, t.transcriptSummary)
+   * }
+   */
+  async listPending(): Promise<{ transfers: TransferRequest[] }> {
+    return this.client.request("GET", "/operator/pending");
+  }
+
+  /**
+   * Accept a transfer — get LiveKit credentials to join the room as operator.
+   *
+   * After calling this, connect to the LiveKit room using the returned token.
+   * The bot will detect the operator and disconnect automatically.
+   *
+   * @example
+   * const result = await agent.operator.join("abc12345")
+   * // Connect to LiveKit with result.livekitUrl + result.token
+   * // result.operatorIdentity is your participant identity
+   * // result.callerPhone, result.transcriptSummary for context
+   */
+  async join(transferId: string): Promise<OperatorJoinResponse> {
+    return this.client.request<OperatorJoinResponse>(
+      "POST",
+      `/operator/join/${transferId}`
+    );
   }
 }

@@ -115,7 +115,7 @@ interface Webhook {
     events: string[];
     created_at: string;
 }
-type WebhookEvent = "call.queued" | "call.started" | "call.completed" | "call.failed";
+type WebhookEvent = "call.queued" | "call.started" | "call.completed" | "call.failed" | "operator.transfer_requested" | "operator.transfer_accepted";
 interface WebhookPayload {
     event: WebhookEvent;
     call_id: string;
@@ -126,6 +126,26 @@ interface WebhookPayload {
     transcript?: TranscriptEntry[];
     fields?: Record<string, string>;
     [key: string]: unknown;
+}
+interface TransferRequest {
+    transferId: string;
+    roomName: string;
+    callerPhone: string;
+    agentName: string;
+    transferTo: string;
+    transcriptSummary: string;
+    livekitUrl: string;
+    joinUrl: string;
+    createdAt: number;
+    status: "pending" | "accepted";
+}
+interface OperatorJoinResponse {
+    livekitUrl: string;
+    token: string;
+    roomName: string;
+    operatorIdentity: string;
+    callerPhone: string;
+    transcriptSummary: string;
 }
 declare class AgentCoreError extends Error {
     status: number;
@@ -147,6 +167,7 @@ declare class AgentCore {
     agents: AgentsAPI;
     numbers: NumbersAPI;
     webhooks: WebhooksAPI;
+    operator: OperatorAPI;
     constructor(config: AgentCoreConfig);
     request<T>(method: string, path: string, body?: unknown): Promise<T>;
     verifyWebhook(payload: string, signature: string): WebhookPayload;
@@ -218,5 +239,34 @@ declare class WebhooksAPI {
         status: string;
     }>;
 }
+declare class OperatorAPI {
+    private client;
+    constructor(client: AgentCore);
+    /**
+     * List pending transfers waiting for an operator.
+     *
+     * @example
+     * const { transfers } = await agent.operator.listPending()
+     * for (const t of transfers) {
+     *   console.log(t.transferId, t.callerPhone, t.transcriptSummary)
+     * }
+     */
+    listPending(): Promise<{
+        transfers: TransferRequest[];
+    }>;
+    /**
+     * Accept a transfer — get LiveKit credentials to join the room as operator.
+     *
+     * After calling this, connect to the LiveKit room using the returned token.
+     * The bot will detect the operator and disconnect automatically.
+     *
+     * @example
+     * const result = await agent.operator.join("abc12345")
+     * // Connect to LiveKit with result.livekitUrl + result.token
+     * // result.operatorIdentity is your participant identity
+     * // result.callerPhone, result.transcriptSummary for context
+     */
+    join(transferId: string): Promise<OperatorJoinResponse>;
+}
 
-export { type Agent, type AgentConfig, AgentCore, type AgentCoreConfig, AgentCoreError, type Call, type CreateAgentParams, type CreateCallParams, type CreateWebhookParams, type PhoneNumber, type Provider, type TestCallResponse, type Transcript, type TranscriptEntry, type UpdateAgentParams, type Webhook, type WebhookEvent, type WebhookPayload };
+export { type Agent, type AgentConfig, AgentCore, type AgentCoreConfig, AgentCoreError, type Call, type CreateAgentParams, type CreateCallParams, type CreateWebhookParams, type OperatorJoinResponse, type PhoneNumber, type Provider, type TestCallResponse, type Transcript, type TranscriptEntry, type TransferRequest, type UpdateAgentParams, type Webhook, type WebhookEvent, type WebhookPayload };
