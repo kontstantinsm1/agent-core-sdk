@@ -148,6 +148,7 @@ var CallsAPI = class {
     return this.client.request("POST", "/calls", {
       phone: p.phone,
       agent_id: p.agentId || this.client.defaultAgentId,
+      provider: p.provider,
       webhook_url: p.webhookUrl || this.client.defaultWebhookUrl,
       caller_id: p.callerId || this.client.defaultCallerId,
       step_save: p.stepSave ?? this.client.defaultStepSave ?? true,

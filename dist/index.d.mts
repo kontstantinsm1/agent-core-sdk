@@ -12,6 +12,7 @@ interface AgentCoreConfig {
 interface CreateCallParams {
     phone: string;
     agentId?: string;
+    provider?: string;
     webhookUrl?: string;
     callerId?: string;
     stepSave?: boolean;
